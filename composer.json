@@ -1,0 +1,26 @@
+{
+  "name": "sivi/afd-connectors",
+  "description": "A library with connectors to fetch ADN messages",
+  "type": "library",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Lucas van der Have",
+      "email": "lucasvdhave@gmail.com"
+    }
+  ],
+  "require": {
+    "myclabs/php-enum": "^1.6",
+    "psr/container": "^1.0",
+    "guzzlehttp/guzzle": "^6",
+    "nesbot/carbon": "^2.5"
+  },
+  "autoload": {
+    "psr-4": {
+      "SIVI\\AFDConnectors\\": "src"
+    }
+  },
+  "require-dev": {
+    "goetas-webservices/xsd2php": "^0.3.3"
+  }
+}
