@@ -2,7 +2,7 @@
 
 namespace SIVI\AFDConnectors\Exceptions;
 
-use \Exception;
+use Exception;
 
 class FetchingWSDLFailedException extends Exception
 {
