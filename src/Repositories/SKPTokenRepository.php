@@ -2,6 +2,8 @@
 
 namespace SIVI\AFDConnectors\Repositories;
 
+use SIVI\AFDConnectors\Config\Contracts\SKPConfig;
+use SIVI\AFDConnectors\Exceptions\Exception;
 use SIVI\AFDConnectors\Models\SKP\AuthToken;
 use SoapClient;
 
@@ -9,6 +11,16 @@ class SKPTokenRepository implements \SIVI\AFDConnectors\Repositories\Contracts\S
 {
     /** @var SoapClient */
     protected $soapClient;
+    /**
+     * @var SKPConfig
+     */
+    protected $skpConfig;
+
+
+    public function __construct(SKPConfig $skpConfig)
+    {
+        $this->skpConfig = $skpConfig;
+    }
 
     /**
      * @return SoapClient
@@ -19,9 +31,7 @@ class SKPTokenRepository implements \SIVI\AFDConnectors\Repositories\Contracts\S
             return $this->soapClient;
         }
 
-        return $this->soapClient = new SoapClient(
-            'https://ezinsure-at.colimbra.net/webservices/usermanagement/tokenwebservice.asmx?wsdl',
-            [
+        return $this->soapClient = new SoapClient($this->skpConfig->getAuthWSDL(),[
                 'classmap' => [
                     'GetTokenResponse' => AuthToken::class,
                 ],
@@ -32,24 +42,16 @@ class SKPTokenRepository implements \SIVI\AFDConnectors\Repositories\Contracts\S
      * @param string $appKey
      * @param string $username
      * @param string $password
-     * @return mixed
+     * @return AuthToken
+     * @throws Exception
      */
     public function getToken($appKey, $username, $password)
     {
-        dd($this->getClient()->GetToken([
+        return $this->getClient()->GetToken([
             'appKey' => $appKey,
             'username' => $username,
             'password' => $password,
-        ]));
-    }
-
-    /**
-     * @param $token
-     * @return mixed
-     */
-    public function setToken($token)
-    {
-
+        ]);
     }
 
 }
