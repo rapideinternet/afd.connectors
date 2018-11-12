@@ -2,35 +2,33 @@
 
 namespace SIVI\AFDConnectors\Connectors;
 
+use SIVI\AFDConnectors\Abstracts\SKP\SKPConnector;
+use SIVI\AFDConnectors\Config\Contracts\SKPConfig;
+use SIVI\AFDConnectors\Config\Contracts\SKPReadConfig;
 use SIVI\AFDConnectors\Enums\SKP\GetFunction;
 use SIVI\AFDConnectors\Exceptions\FetchingWSDLFailedException;
 use SIVI\AFDConnectors\Interfaces\BatchMessage;
 use SIVI\AFDConnectors\Models\SKP\Message;
 use SIVI\AFDConnectors\Models\SKP\Message\ProcesInfo;
 use SIVI\AFDConnectors\Models\TIME\Envelope\ListEnvelope;
-use SIVI\AFDConnectors\Models\TIME\Envelope\SingleEnvelope;
-use SIVI\AFDConnectors\Models\TIME\Message\Part;
 use SIVI\AFDConnectors\Repositories\Contracts\SKPTokenRepository;
 use SoapClient;
 
-class SKPReadConnector implements Contracts\SKPReadConnector
+class SKPReadConnector extends SKPConnector implements Contracts\SKPReadConnector
 {
     /**
      * @var SoapClient
      */
     protected $soapClient;
     /**
-     * @var SKPTokenRepository
+     * @var SKPReadConfig
      */
-    private $SKPTokenRepository;
+    private $skpReadConfig;
 
-    /**
-     * TIMEConnector constructor.
-     * @param SKPTokenRepository $SKPTokenRepository
-     */
-    public function __construct()
+    public function __construct(SKPTokenRepository $skpTokenRepository, SKPConfig $skpConfig, SKPReadConfig $skpReadConfig)
     {
-        //$this->SKPTokenRepository = $SKPTokenRepository;
+        parent::__construct($skpTokenRepository, $skpConfig);
+        $this->skpReadConfig = $skpReadConfig;
     }
 
     /**
@@ -39,7 +37,7 @@ class SKPReadConnector implements Contracts\SKPReadConnector
      */
     public function getMessages()
     {
-       return $this->getMessages(GetFunction::ALL_MAIL());
+        return $this->getMessagesByFunction(GetFunction::ALL_MAIL());
     }
 
     public function getMessagesByFunction(GetFunction $function)
@@ -85,7 +83,7 @@ class SKPReadConnector implements Contracts\SKPReadConnector
             return $this->soapClient;
         }
 
-        return $this->soapClient = new SoapClient($this->getWSDL(), [
+        return $this->soapClient = new SoapClient($this->skpReadConfig->getWSDL(), [
             'location' => $this->getLocation(),
             'classmap' => [
                 'geefResultatenOverzichtResponseGeefResultatenOverzichtAntwoord' => Message::class,
@@ -100,47 +98,26 @@ class SKPReadConnector implements Contracts\SKPReadConnector
         ]);
     }
 
+
     /**
      * @return string
+     * @throws \SIVI\AFDConnectors\Exceptions\Exception
      */
-    protected function getWSDL()
-    {
-        return "https://ezinsure-at.colimbra.net/webservices/ems/emswebservice.asmx?wsdl";
-    }
-
     protected function getLocation()
     {
-        //$token = $this->SKPTokenRepository->getToken("","","");
+        $token = $this->getToken(
+            $this->skpReadConfig->getAppKey(),
+            $this->skpReadConfig->getUsername(),
+            $this->skpReadConfig->getPassword()
+        );
 
-        return "https://ezinsure-at.colimbra.net/webservices/ems/emswebservice.asmx?oid=888&goid=894&apk=hgnt76456sgg4hs1&tkn=2A9532BF3136878D2013C343D604DFCD";
-    }
-
-    /**
-     * @param Message $message
-     * @return Message
-     * @throws FetchingWSDLFailedException
-     */
-    protected function getMessageWithPartsByMessage(Message $message)
-    {
-        $client = $this->getClient();
-
-        /** @var SingleEnvelope $result */
-        $result = $client->getMessage([
-            'message' => [
-                'listID' => $message->listID
-            ]
+        return vsprintf('%s?oid=%s&goid=%s&apk=%s&tkn=%s',[
+            $this->skpReadConfig->getURI(),
+            $this->getOwnerId(),
+            $this->getGIMObjectId(),
+            $this->skpReadConfig->getAppKey(),
+            $token->token,
         ]);
-
-        return $result->getMessage();
     }
 
-    /**
-     * @param Message $message
-     * @return Part[]
-     * @throws FetchingWSDLFailedException
-     */
-    protected function getMessagePartsByMessage(Message $message)
-    {
-        return $this->getMessageWithPartsByMessage($message)->getParts();
-    }
 }

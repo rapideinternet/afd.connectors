@@ -6,6 +6,13 @@ interface SKPReadConfig
 {
 
     /**
+     * The uri of the service
+     *
+     * @return string
+     */
+    public function getURI();
+
+    /**
      * The uri of the WSDL
      *
      * @return string

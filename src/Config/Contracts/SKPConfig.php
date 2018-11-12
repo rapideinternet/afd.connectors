@@ -8,6 +8,11 @@ interface SKPConfig
     /**
      * @return string
      */
+    public function getAuthURI();
+
+    /**
+     * @return string
+     */
     public function getAuthWSDL();
 
     /**
