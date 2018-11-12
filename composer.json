@@ -1,5 +1,5 @@
 {
-  "name": "sivi/afd-connectors",
+  "name": "sivi/afd.connectors",
   "description": "A library with connectors to fetch ADN messages",
   "type": "library",
   "license": "MIT",
@@ -13,7 +13,8 @@
     "myclabs/php-enum": "^1.6",
     "psr/container": "^1.0",
     "guzzlehttp/guzzle": "^6",
-    "nesbot/carbon": "^2.5"
+    "nesbot/carbon": "^1.0",
+    "ext-soap": "*"
   },
   "autoload": {
     "psr-4": {
