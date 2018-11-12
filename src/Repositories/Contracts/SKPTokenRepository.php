@@ -2,6 +2,8 @@
 
 namespace SIVI\AFDConnectors\Repositories\Contracts;
 
+use SIVI\AFDConnectors\Exceptions\Exception;
+use SIVI\AFDConnectors\Models\SKP\AuthToken;
 
 interface SKPTokenRepository
 {
@@ -10,14 +12,9 @@ interface SKPTokenRepository
      * @param string $appKey
      * @param string $username
      * @param string $password
-     * @return mixed
+     * @return AuthToken
+     * @throws Exception
      */
     public function getToken($appKey, $username, $password);
-
-    /**
-     * @param $token
-     * @return mixed
-     */
-    public function setToken($token);
 
 }
