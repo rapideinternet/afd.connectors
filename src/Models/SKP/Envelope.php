@@ -6,8 +6,9 @@ use SIVI\AFDConnectors\Models\SKP\Message\ProcesInfo;
 
 /**
  * Class Message
+ * @package SIVI\AFDConnectors\Models\TIME
  */
-class Message
+class Envelope
 {
     /**
      * @var ProcesInfo|null

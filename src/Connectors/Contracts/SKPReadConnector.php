@@ -13,10 +13,25 @@ interface SKPReadConnector extends Connector
 {
 
     /**
-     * @return BatchMessage[]
+     * @return Message[]
      */
     public function getMessages();
 
+    /**
+     * @param GetFunction $function
+     * @return mixed
+     */
     public function getMessagesByFunction(GetFunction $function);
+
+    /**
+     * @param $id
+     * @return Message|null
+     */
+    public function getMessageById($id);
+
+    /**
+     * @param Message[] $messages
+     */
+    public function ackMessages($messages);
 
 }
