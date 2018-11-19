@@ -1,0 +1,277 @@
+<?xml version="1.0" encoding="utf-8"?>
+<wsdl:definitions xmlns:tm="http://microsoft.com/wsdl/mime/textMatching/" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:mime="http://schemas.xmlsoap.org/wsdl/mime/" xmlns:tns="http://gim.nl/ws/gim" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:s1="http://gim.nl/schemas/gim" xmlns:s="http://www.w3.org/2001/XMLSchema" xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/" xmlns:http="http://schemas.xmlsoap.org/wsdl/http/" targetNamespace="http://gim.nl/ws/gim" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">
+  <wsdl:types>
+    <s:schema elementFormDefault="qualified" targetNamespace="http://gim.nl/ws/gim">
+      <s:import namespace="http://gim.nl/schemas/gim" />
+      <s:element name="geefSjabloon">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" ref="s1:geefSjabloonVraag" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="geefSjabloonResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" ref="s1:geefSjabloonAntwoord" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="doeFunctie">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" ref="s1:doeFunctieVraag" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="doeFunctieResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" ref="s1:doeFunctieAntwoord" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="geefProcesStatus">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" ref="s1:geefProcesStatusVraag" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="geefProcesStatusResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" ref="s1:geefProcesStatusAntwoord" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="geefResultaat">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" ref="s1:geefResultaatVraag" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="geefResultaatResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" ref="s1:geefResultaatAntwoord" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+    </s:schema>
+    <s:schema elementFormDefault="qualified" targetNamespace="http://gim.nl/schemas/gim">
+      <s:element name="geefSjabloonVraag" type="s1:berichtType" />
+      <s:complexType name="berichtType">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="1" name="procesInfo" type="s1:procesInfoType" />
+          <s:element minOccurs="0" maxOccurs="1" name="inhoud" type="s1:inhoudType" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="procesInfoType">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="1" name="procesId" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="procesStatus" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="functie" type="s1:functieType" />
+          <s:element minOccurs="0" maxOccurs="1" name="procesOmschrijving" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="dialoogLocatie" type="s:string" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="functieType">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="1" name="productId" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="contextId" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="functieId" type="s:string" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="inhoudType">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="1" name="gimData" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="bijlagen" type="s1:bijlagenType" />
+          <s:element minOccurs="0" maxOccurs="1" name="meldingen" type="s1:ArrayOfMeldingType" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="bijlagenType">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="1" name="bestanden" type="s1:ArrayOfBestandType" />
+          <s:element minOccurs="0" maxOccurs="1" name="verwijzingen" type="s1:ArrayOfVerwijzingType" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="ArrayOfBestandType">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="unbounded" name="item" type="s1:bestandType" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="bestandType">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="1" name="soort" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="omschrijving" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="bestandType" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="bestandData" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="compressieType" type="s:string" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="ArrayOfVerwijzingType">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="unbounded" name="item" type="s1:verwijzingType" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="verwijzingType">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="1" name="soort" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="omschrijving" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="URL" type="s:string" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="ArrayOfMeldingType">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="unbounded" name="item" type="s1:meldingType" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="meldingType">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="1" name="soort" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="meldingCode" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="tekst" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="toelichting" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="XPath" type="s:string" />
+        </s:sequence>
+      </s:complexType>
+      <s:element name="geefSjabloonAntwoord" type="s1:berichtType" />
+      <s:element name="doeFunctieVraag" type="s1:berichtType" />
+      <s:element name="doeFunctieAntwoord" type="s1:berichtType" />
+      <s:element name="geefProcesStatusVraag" type="s1:berichtType" />
+      <s:element name="geefProcesStatusAntwoord" type="s1:berichtType" />
+      <s:element name="geefResultaatVraag" type="s1:berichtType" />
+      <s:element name="geefResultaatAntwoord" type="s1:berichtType" />
+    </s:schema>
+  </wsdl:types>
+  <wsdl:message name="geefSjabloonSoapIn">
+    <wsdl:part name="parameters" element="tns:geefSjabloon" />
+  </wsdl:message>
+  <wsdl:message name="geefSjabloonSoapOut">
+    <wsdl:part name="parameters" element="tns:geefSjabloonResponse" />
+  </wsdl:message>
+  <wsdl:message name="doeFunctieSoapIn">
+    <wsdl:part name="parameters" element="tns:doeFunctie" />
+  </wsdl:message>
+  <wsdl:message name="doeFunctieSoapOut">
+    <wsdl:part name="parameters" element="tns:doeFunctieResponse" />
+  </wsdl:message>
+  <wsdl:message name="geefProcesStatusSoapIn">
+    <wsdl:part name="parameters" element="tns:geefProcesStatus" />
+  </wsdl:message>
+  <wsdl:message name="geefProcesStatusSoapOut">
+    <wsdl:part name="parameters" element="tns:geefProcesStatusResponse" />
+  </wsdl:message>
+  <wsdl:message name="geefResultaatSoapIn">
+    <wsdl:part name="parameters" element="tns:geefResultaat" />
+  </wsdl:message>
+  <wsdl:message name="geefResultaatSoapOut">
+    <wsdl:part name="parameters" element="tns:geefResultaatResponse" />
+  </wsdl:message>
+  <wsdl:portType name="gimServiceBinding">
+    <wsdl:operation name="geefSjabloon">
+      <wsdl:input message="tns:geefSjabloonSoapIn" />
+      <wsdl:output message="tns:geefSjabloonSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="doeFunctie">
+      <wsdl:input message="tns:doeFunctieSoapIn" />
+      <wsdl:output message="tns:doeFunctieSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="geefProcesStatus">
+      <wsdl:input message="tns:geefProcesStatusSoapIn" />
+      <wsdl:output message="tns:geefProcesStatusSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="geefResultaat">
+      <wsdl:input message="tns:geefResultaatSoapIn" />
+      <wsdl:output message="tns:geefResultaatSoapOut" />
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="gimServiceBinding" type="tns:gimServiceBinding">
+    <soap:binding transport="http://schemas.xmlsoap.org/soap/http" />
+    <wsdl:operation name="geefSjabloon">
+      <soap:operation soapAction="geefSjabloon" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="doeFunctie">
+      <soap:operation soapAction="doeFunctie" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="geefProcesStatus">
+      <soap:operation soapAction="geefProcesStatus" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="geefResultaat">
+      <soap:operation soapAction="geefResultaat" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:binding name="gimServiceBinding1" type="tns:gimServiceBinding">
+    <soap12:binding transport="http://schemas.xmlsoap.org/soap/http" />
+    <wsdl:operation name="geefSjabloon">
+      <soap12:operation soapAction="geefSjabloon" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="doeFunctie">
+      <soap12:operation soapAction="doeFunctie" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="geefProcesStatus">
+      <soap12:operation soapAction="geefProcesStatus" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="geefResultaat">
+      <soap12:operation soapAction="geefResultaat" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="GtsWebService">
+    <wsdl:port name="gimServiceBinding" binding="tns:gimServiceBinding">
+      <soap:address location="https://ezinsure-at.colimbra.net/Webservices/Gts/GtsWebService.asmx" />
+    </wsdl:port>
+    <wsdl:port name="gimServiceBinding1" binding="tns:gimServiceBinding1">
+      <soap12:address location="https://ezinsure-at.colimbra.net/Webservices/Gts/GtsWebService.asmx" />
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>

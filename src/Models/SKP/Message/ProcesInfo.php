@@ -19,6 +19,9 @@ class ProcesInfo
      */
     public $procesOmschrijving;
 
+    /**
+     * @var Functie
+     */
     public $functie;
 
 
