@@ -8,6 +8,7 @@ use SIVI\AFDConnectors\Config\Contracts\SKPReadConfig;
 use SIVI\AFDConnectors\Enums\SKP\GetFunction;
 use SIVI\AFDConnectors\Exceptions\FetchingWSDLFailedException;
 use SIVI\AFDConnectors\Interfaces\BatchMessage;
+use SIVI\AFDConnectors\Models\SKP\Envelope;
 use SIVI\AFDConnectors\Models\SKP\Message;
 use SIVI\AFDConnectors\Models\SKP\Message\ProcesInfo;
 use SIVI\AFDConnectors\Models\TIME\Envelope\ListEnvelope;
@@ -40,6 +41,11 @@ class SKPReadConnector extends SKPConnector implements Contracts\SKPReadConnecto
         return $this->getMessagesByFunction(GetFunction::ALL_MAIL());
     }
 
+    /**
+     * @param GetFunction $function
+     * @return mixed
+     * @throws FetchingWSDLFailedException
+     */
     public function getMessagesByFunction(GetFunction $function)
     {
         $client = $this->getClient();
@@ -56,21 +62,72 @@ class SKPReadConnector extends SKPConnector implements Contracts\SKPReadConnecto
             ]
         ];
 
-        /** @var ListEnvelope $listEnvelope */
         $listEnvelope = $client->geefResultatenOverzicht($parameters);
 
-        dd($listEnvelope);
+        $parameters = [
+            'geefResultatenVraag' => [
+                'procesInfo' => [
+                    'functie' => [
+                        'productId' => 0,
+                        'contextId' => 701,
+                        'functieId' => 7801,
+                    ]
+                ],
+                'resultatenOverzicht' => $listEnvelope->geefResultatenOverzichtAntwoord->getMessages()
+            ]
+        ];
 
-        $messages = [];
+        $messagesEnvelope = $client->geefResultaten($parameters);
 
-        dd($listEnvelope->geefResultatenOverzichtAntwoord->resultatenOverzicht);
+        return $messagesEnvelope->geefResultatenAntwoord->getMessages();
+    }
 
-        foreach ($listEnvelope->geefResultatenOverzichtAntwoord->resultatenOverzicht as $messageWithoutParts) {
-            dd($messageWithoutParts);
-            $messages[] = $this->getMessageWithPartsByMessage($messageWithoutParts);
-        }
+    public function getMessageById($id)
+    {
+        $client = $this->getClient();
 
-        return $messages;
+        $parameters = [
+            'geefResultatenVraag' => [
+                'procesInfo' => [
+                    'functie' => [
+                        'productId' => 0,
+                        'contextId' => 701,
+                        'functieId' => 7801,
+                    ]
+                ],
+                'resultatenOverzicht' => [
+                    'item' => [
+                        'procesInfo' => [
+                            'procesId' => $id
+                        ]
+                    ]
+                ]
+            ]
+        ];
+
+        $messages = $client->geefResultaten($parameters)->geefResultatenAntwoord->getMessages();
+
+        return $messages == [] ? null : $messages[0];
+    }
+
+    public function ackMessages($messages)
+    {
+        $client = $this->getClient();
+
+        $parameters = [
+            'ontvangstBevestigingVraag' => [
+                'procesInfo' => [
+                    'functie' => [
+                        'productId' => 0,
+                        'contextId' => 702,
+                        'functieId' => 7900,
+                    ]
+                ],
+                'resultatenOverzicht' => $messages
+            ]
+        ];
+
+        $client->ontvangstBevestiging($parameters);
     }
 
     /**
@@ -86,7 +143,8 @@ class SKPReadConnector extends SKPConnector implements Contracts\SKPReadConnecto
         return $this->soapClient = new SoapClient($this->skpReadConfig->getWSDL(), [
             'location' => $this->getLocation(),
             'classmap' => [
-                'geefResultatenOverzichtResponseGeefResultatenOverzichtAntwoord' => Message::class,
+                'geefResultatenOverzichtResponseGeefResultatenOverzichtAntwoord' => Envelope::class,
+                'geefResultatenResponseGeefResultatenAntwoord' => Envelope::class,
                 'procesInfoType' => ProcesInfo::class,
                 'berichtType' => Message::class
 //                'getMessageResponse' => SingleEnvelope::class,
