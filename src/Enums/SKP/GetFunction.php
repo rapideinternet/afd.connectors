@@ -1,0 +1,29 @@
+<?php namespace SIVI\AFDConnectors\Enums\SKP;
+
+use MyCLabs\Enum\Enum;
+
+/**
+ * Class MessageType
+ * @package SIVI\AFDConnectors\Enums\SKP
+ *
+ */
+class GetFunction extends Enum
+{
+    const ALL_MAIL = 7000;
+    const QUOTATION_OVERVIEW = 7002;
+    const NEW_CONTRACT_OVERVIEW = 7003;
+    const UPDATE_CONTRACT_OVERVIEW = 7004;
+    const CONTRACT_INFO_OVERVIEW = 7005;
+    const CORRESPONDENCE_OVERVIEW = 7006;
+    const PROGRESS_MESSAGE_OVERVIEW = 7007;
+    const RELATION_UPDATE_OVERVIEW = 7008;
+    const NON_POLICY_MESSAGE_OVERVIEW = 7009;
+    const ALL_BATCH_OVERVIEW = 7700;
+    const POLICY_INFO_OVERVIEW = 7701;
+    const POLICY_MUTATION_OVERVIEW = 7702;
+    const POLICY_EXTENSION_OVERVIEW = 7703;
+    const PRI_OVERVIEW = 7704;
+    const ESB_OVERVIEW = 7705;
+    const ACCEPTANCE_EXTENSION_OVERVIEW = 7706;
+    const CORRESPONDENCE_BATCH_OVERVIEW = 7707;
+}

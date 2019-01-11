@@ -7,11 +7,14 @@ use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use SIVI\AFDConnectors\Config\Contracts\TIMEConfig;
 use SIVI\AFDConnectors\Enums\TIME\MessageStatus;
+use SIVI\AFDConnectors\Exceptions\CertificateExpiredException;
+use SIVI\AFDConnectors\Exceptions\CertificateInvalidException;
 use SIVI\AFDConnectors\Exceptions\FetchingWSDLFailedException;
+use SIVI\AFDConnectors\Exceptions\FileNotFoundException;
 use SIVI\AFDConnectors\Interfaces\BatchMessage;
+use SIVI\AFDConnectors\Interfaces\TIME\Message;
 use SIVI\AFDConnectors\Models\TIME\Envelope\ListEnvelope;
 use SIVI\AFDConnectors\Models\TIME\Envelope\SingleEnvelope;
-use SIVI\AFDConnectors\Models\TIME\Message;
 use SIVI\AFDConnectors\Models\TIME\Message\Address;
 use SIVI\AFDConnectors\Models\TIME\Message\Part;
 use SoapClient;
@@ -38,7 +41,10 @@ class TIMEConnector implements Contracts\TIMEConnector
 
     /**
      * @return BatchMessage[]
+     * @throws CertificateExpiredException
+     * @throws CertificateInvalidException
      * @throws FetchingWSDLFailedException
+     * @throws FileNotFoundException
      */
     public function getMessages()
     {
@@ -48,7 +54,10 @@ class TIMEConnector implements Contracts\TIMEConnector
     /**
      * @param MessageStatus $messageStatus
      * @return BatchMessage[]
+     * @throws CertificateExpiredException
+     * @throws CertificateInvalidException
      * @throws FetchingWSDLFailedException
+     * @throws FileNotFoundException
      */
     public function getMessagesByStatus(MessageStatus $messageStatus)
     {
@@ -77,13 +86,18 @@ class TIMEConnector implements Contracts\TIMEConnector
 
     /**
      * @return SoapClient
+     * @throws CertificateExpiredException
+     * @throws CertificateInvalidException
      * @throws FetchingWSDLFailedException
+     * @throws FileNotFoundException
      */
     protected function getClient()
     {
         if ($this->soapClient !== null) {
             return $this->soapClient;
         }
+
+        $this->validateCertificate();
 
         return $this->soapClient = new SoapClient($this->getWSDL(), [
             'proxy_host' => $this->config->getHost(),
@@ -92,12 +106,45 @@ class TIMEConnector implements Contracts\TIMEConnector
             'classmap' => [
                 'getListResponse' => ListEnvelope::class,
                 'getMessageResponse' => SingleEnvelope::class,
-                'listMessageOut' => Message::class,
-                'getMessageOut' => Message::class,
+                'listMessageOut' => \SIVI\AFDConnectors\Models\TIME\Message::class,
+                'getMessageOut' => \SIVI\AFDConnectors\Models\TIME\Message::class,
                 'partIn_type' => Part::class,
                 'address_type' => Address::class,
             ],
         ]);
+    }
+
+    /**
+     * @return void
+     * @throws CertificateExpiredException
+     * @throws CertificateInvalidException
+     * @throws FileNotFoundException
+     */
+    protected function validateCertificate()
+    {
+        if (!file_exists($this->config->getCertificatePath())) {
+            throw new FileNotFoundException(sprintf(
+                'Could not find certificate at "%s" or permissions are incorrect',
+                $this->config->getCertificatePath()
+            ));
+        }
+
+        $certData = file_get_contents($this->config->getCertificatePath());
+
+        try {
+            $certInfo = openssl_x509_parse($certData);
+        } catch (\Exception $exception) {
+            throw new CertificateInvalidException('Could not parse certificate', 0, $exception);
+        }
+
+        $validTo = Carbon::createFromTimestamp($certInfo['validTo_time_t']);
+
+        if ($validTo->lt(Carbon::now())) {
+            throw new CertificateExpiredException(sprintf(
+                'The certificate is no longer valid and expired on "%s"',
+                $validTo->toDateTimeString()
+            ));
+        }
     }
 
     /**
@@ -112,6 +159,7 @@ class TIMEConnector implements Contracts\TIMEConnector
             $response = $client->request('GET', sprintf('%s?wsdl', $this->config->getHost()),
                 ['cert' => [$this->config->getCertificatePath(), $this->config->getCertificatePassphrase()]]);
 
+            @mkdir($this->config->getWSDLStoragePath(), 0755, true);
             $path = sprintf('%s/stsPort.wsdl', $this->config->getWSDLStoragePath());
 
             file_put_contents($path, $response->getBody()->getContents());
@@ -123,11 +171,14 @@ class TIMEConnector implements Contracts\TIMEConnector
     }
 
     /**
-     * @param Message $message
-     * @return Message
+     * @param \SIVI\AFDConnectors\Models\TIME\Message $message
+     * @return \SIVI\AFDConnectors\Models\TIME\Message
+     * @throws CertificateExpiredException
+     * @throws CertificateInvalidException
      * @throws FetchingWSDLFailedException
+     * @throws FileNotFoundException
      */
-    protected function getMessageWithPartsByMessage(Message $message)
+    protected function getMessageWithPartsByMessage(\SIVI\AFDConnectors\Models\TIME\Message $message)
     {
         $client = $this->getClient();
 
@@ -143,10 +194,36 @@ class TIMEConnector implements Contracts\TIMEConnector
 
     /**
      * @param Message $message
-     * @return Part[]
+     * @return bool
+     * @throws CertificateExpiredException
+     * @throws CertificateInvalidException
      * @throws FetchingWSDLFailedException
+     * @throws FileNotFoundException
      */
-    protected function getMessagePartsByMessage(Message $message)
+    public function ackMessage(Message $message)
+    {
+        $client = $this->getClient();
+
+        $parameters = [
+            'message' => [
+                'listID' => $message->getListID()
+            ]
+        ];
+
+        $ackResult = $client->ackMessage($parameters);
+
+        return $ackResult->ackMessageResult->resultCode === "000";
+    }
+
+    /**
+     * @param \SIVI\AFDConnectors\Models\TIME\Message $message
+     * @return Part[]
+     * @throws CertificateExpiredException
+     * @throws CertificateInvalidException
+     * @throws FetchingWSDLFailedException
+     * @throws FileNotFoundException
+     */
+    protected function getMessagePartsByMessage(\SIVI\AFDConnectors\Models\TIME\Message $message)
     {
         return $this->getMessageWithPartsByMessage($message)->getParts();
     }
