@@ -11,6 +11,7 @@ use SIVI\AFDConnectors\Exceptions\CertificateExpiredException;
 use SIVI\AFDConnectors\Exceptions\CertificateInvalidException;
 use SIVI\AFDConnectors\Exceptions\FetchingWSDLFailedException;
 use SIVI\AFDConnectors\Exceptions\FileNotFoundException;
+use SIVI\AFDConnectors\Exceptions\WritingWSDLFailedException;
 use SIVI\AFDConnectors\Interfaces\BatchMessage;
 use SIVI\AFDConnectors\Interfaces\TIME\Message;
 use SIVI\AFDConnectors\Models\TIME\Envelope\ListEnvelope;
@@ -150,6 +151,7 @@ class TIMEConnector implements Contracts\TIMEConnector
     /**
      * @return string
      * @throws FetchingWSDLFailedException
+     * @throws WritingWSDLFailedException
      */
     protected function getWSDL()
     {
@@ -162,7 +164,9 @@ class TIMEConnector implements Contracts\TIMEConnector
             @mkdir($this->config->getWSDLStoragePath(), 0755, true);
             $path = sprintf('%s/stsPort.wsdl', $this->config->getWSDLStoragePath());
 
-            file_put_contents($path, $response->getBody()->getContents());
+            if (file_put_contents($path, $response->getBody()->getContents()) === false) {
+                throw new WritingWSDLFailedException('Could not write temporary wsdl.');
+            }
 
             return $path;
         } catch (GuzzleException $exception) {
