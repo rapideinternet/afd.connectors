@@ -150,6 +150,7 @@ class TIMEConnector implements Contracts\TIMEConnector
     /**
      * @return string
      * @throws FetchingWSDLFailedException
+     * @throws \Exception
      */
     protected function getWSDL()
     {
@@ -162,7 +163,9 @@ class TIMEConnector implements Contracts\TIMEConnector
             @mkdir($this->config->getWSDLStoragePath(), 0755, true);
             $path = sprintf('%s/stsPort.wsdl', $this->config->getWSDLStoragePath());
 
-            file_put_contents($path, $response->getBody()->getContents());
+            if (file_put_contents($path, $response->getBody()->getContents()) === false) {
+                throw new \Exception('Could not write temporary wsdl.');
+            }
 
             return $path;
         } catch (GuzzleException $exception) {
