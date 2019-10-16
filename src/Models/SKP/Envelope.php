@@ -23,7 +23,7 @@ class Envelope
 
     public function getMessages()
     {
-        if (!isset($this->resultatenOverzicht)){
+        if (!isset($this->resultatenOverzicht, $this->resultatenOverzicht->item)) {
             return [];
         }
 
