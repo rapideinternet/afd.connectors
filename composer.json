@@ -21,7 +21,5 @@
       "SIVI\\AFDConnectors\\": "src"
     }
   },
-  "require-dev": {
-    "goetas-webservices/xsd2php": "^0.3.3"
-  }
+  "require-dev": {}
 }
