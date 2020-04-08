@@ -18,10 +18,14 @@ class ListEnvelope
      */
     public function getMessages()
     {
-        if ($this->getListResult->message instanceof Message) {
-            return [$this->getListResult->message];
-        }
+        if (isset($this->getListResult)) {
+            if ($this->getListResult->message instanceof Message) {
+                return [$this->getListResult->message];
+            }
 
-        return $this->getListResult->message;
+            return $this->getListResult->message;
+        } else {
+            return [];
+        }
     }
 }
