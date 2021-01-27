@@ -19,6 +19,7 @@ use SIVI\AFDConnectors\Models\TIME\Envelope\ListEnvelope;
 use SIVI\AFDConnectors\Models\TIME\Envelope\SingleEnvelope;
 use SIVI\AFDConnectors\Models\TIME\Message\Address;
 use SIVI\AFDConnectors\Models\TIME\Message\Part;
+use SIVI\AFDConnectors\Repositories\Contracts\WSDLCacheRepository;
 use SoapClient;
 
 class TIMEConnector implements Contracts\TIMEConnector
@@ -31,6 +32,11 @@ class TIMEConnector implements Contracts\TIMEConnector
      * @var TIMEConfig
      */
     protected $config;
+
+    /**
+     * @var WSDLCacheRepository
+     */
+    protected $cacheRepository;
 
     /**
      * TIMEConnector constructor.
@@ -159,11 +165,15 @@ class TIMEConnector implements Contracts\TIMEConnector
         $client = new Client();
 
         try {
-            if (!($response = Cache::get('afd_connector_time_wsdl_cache'))) {
+            if ($this->cacheRepository === null || ($this->cacheRepository !== null && !$this->cacheRepository->has('afd_connector_time_wsdl_cache'))) {
                 $response = $client->request('GET', sprintf('%s?wsdl', $this->config->getHost()),
                     ['cert' => [$this->config->getCertificatePath(), $this->config->getCertificatePassphrase()]]);
 
-                Cache::add('afd_connector_time_wsdl_cache', $response, Carbon::now()->addDay());
+                if ($this->cacheRepository !== null) {
+                    $this->cacheRepository->put('afd_connector_time_wsdl_cache', $response, Carbon::now()->addDay());
+                }
+            } else {
+                $response = $this->cacheRepository->get('afd_connector_time_wsdl_cache');
             }
 
             @mkdir($this->config->getWSDLStoragePath(), 0755, true);
@@ -222,6 +232,14 @@ class TIMEConnector implements Contracts\TIMEConnector
         $ackResult = $client->ackMessage($parameters);
 
         return $ackResult->ackMessageResult->resultCode === "000";
+    }
+
+    /**
+     * @param WSDLCacheRepository $cacheRepository
+     */
+    public function setCacheRepository(WSDLCacheRepository $cacheRepository): void
+    {
+        $this->cacheRepository = $cacheRepository;
     }
 
     /**
