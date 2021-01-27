@@ -24,5 +24,5 @@ interface WSDLCacheRepository
      * @param $value
      * @param Carbon $expiresAt
      */
-    public function put($key, $value, Carbon $expiresAt): void;
+    public function add($key, $value, Carbon $expiresAt): void;
 }

@@ -170,7 +170,7 @@ class TIMEConnector implements Contracts\TIMEConnector
                     ['cert' => [$this->config->getCertificatePath(), $this->config->getCertificatePassphrase()]]);
 
                 if ($this->cacheRepository !== null) {
-                    $this->cacheRepository->put('afd_connector_time_wsdl_cache', $response, Carbon::now()->addDay());
+                    $this->cacheRepository->add('afd_connector_time_wsdl_cache', $response, Carbon::now()->addDay());
                 }
             } else {
                 $response = $this->cacheRepository->get('afd_connector_time_wsdl_cache');
