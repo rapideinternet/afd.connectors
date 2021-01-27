@@ -159,11 +159,11 @@ class TIMEConnector implements Contracts\TIMEConnector
         $client = new Client();
 
         try {
-            if (!($response = Cache::get('wsdl_response_certificate_time_connector'))) {
+            if (!($response = Cache::get('afd_connector_time_wsdl_cache'))) {
                 $response = $client->request('GET', sprintf('%s?wsdl', $this->config->getHost()),
                     ['cert' => [$this->config->getCertificatePath(), $this->config->getCertificatePassphrase()]]);
 
-                Cache::add('wsdl_response_certificate_time_connector', $response, Carbon::now()->addDay());
+                Cache::add('afd_connector_time_wsdl_cache', $response, Carbon::now()->addDay());
             }
 
             @mkdir($this->config->getWSDLStoragePath(), 0755, true);
