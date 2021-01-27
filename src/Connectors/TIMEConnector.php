@@ -5,6 +5,7 @@ namespace SIVI\AFDConnectors\Connectors;
 use Carbon\Carbon;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
+use Illuminate\Support\Facades\Cache;
 use SIVI\AFDConnectors\Config\Contracts\TIMEConfig;
 use SIVI\AFDConnectors\Enums\TIME\MessageStatus;
 use SIVI\AFDConnectors\Exceptions\CertificateExpiredException;
@@ -158,8 +159,12 @@ class TIMEConnector implements Contracts\TIMEConnector
         $client = new Client();
 
         try {
-            $response = $client->request('GET', sprintf('%s?wsdl', $this->config->getHost()),
-                ['cert' => [$this->config->getCertificatePath(), $this->config->getCertificatePassphrase()]]);
+            if (!($response = Cache::get('wsdl_response_certificate_time_connector'))) {
+                $response = $client->request('GET', sprintf('%s?wsdl', $this->config->getHost()),
+                    ['cert' => [$this->config->getCertificatePath(), $this->config->getCertificatePassphrase()]]);
+
+                Cache::add('wsdl_response_certificate_time_connector', $response, Carbon::now()->addDay());
+            }
 
             @mkdir($this->config->getWSDLStoragePath(), 0755, true);
             $path = sprintf('%s/stsPort.wsdl', $this->config->getWSDLStoragePath());
