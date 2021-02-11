@@ -36,7 +36,7 @@ class TIMEConnector implements Contracts\TIMEConnector
     /**
      * @var WSDLCacheRepository
      */
-    protected $cacheRepository;
+    protected $wsdlCacheRepository;
 
     /**
      * TIMEConnector constructor.
@@ -165,15 +165,16 @@ class TIMEConnector implements Contracts\TIMEConnector
         $client = new Client();
 
         try {
-            if ($this->cacheRepository === null || ($this->cacheRepository !== null && !$this->cacheRepository->has('afd_connector_time_wsdl_cache'))) {
+            if ($this->wsdlCacheRepository === null || ($this->wsdlCacheRepository !== null && !$this->wsdlCacheRepository->has('afd_connector_time_wsdl_cache'))) {
                 $response = $client->request('GET', sprintf('%s?wsdl', $this->config->getHost()),
                     ['cert' => [$this->config->getCertificatePath(), $this->config->getCertificatePassphrase()]]);
 
-                if ($this->cacheRepository !== null) {
-                    $this->cacheRepository->add('afd_connector_time_wsdl_cache', $response, Carbon::now()->addDay());
+                if ($this->wsdlCacheRepository !== null) {
+                    $this->wsdlCacheRepository->add('afd_connector_time_wsdl_cache', $response,
+                        Carbon::now()->addDay());
                 }
             } else {
-                $response = $this->cacheRepository->get('afd_connector_time_wsdl_cache');
+                $response = $this->wsdlCacheRepository->get('afd_connector_time_wsdl_cache');
             }
 
             @mkdir($this->config->getWSDLStoragePath(), 0755, true);
@@ -235,11 +236,11 @@ class TIMEConnector implements Contracts\TIMEConnector
     }
 
     /**
-     * @param WSDLCacheRepository $cacheRepository
+     * @param WSDLCacheRepository $wsdlCacheRepository
      */
-    public function setCacheRepository(WSDLCacheRepository $cacheRepository): void
+    public function setWSDLCacheRepository(WSDLCacheRepository $wsdlCacheRepository): void
     {
-        $this->cacheRepository = $cacheRepository;
+        $this->wsdlCacheRepository = $wsdlCacheRepository;
     }
 
     /**

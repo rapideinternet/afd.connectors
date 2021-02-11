@@ -31,7 +31,7 @@ interface TIMEConnector extends Connector
     public function ackMessage(Message $batchMessage);
 
     /**
-     * @param WSDLCacheRepository $cacheRepository
+     * @param WSDLCacheRepository $wsdlCacheRepository
      */
-    public function setCacheRepository(WSDLCacheRepository $cacheRepository): void;
+    public function setWSDLCacheRepository(WSDLCacheRepository $wsdlCacheRepository): void;
 }
