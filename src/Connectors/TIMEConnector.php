@@ -5,6 +5,7 @@ namespace SIVI\AFDConnectors\Connectors;
 use Carbon\Carbon;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
+use Illuminate\Support\Facades\Cache;
 use SIVI\AFDConnectors\Config\Contracts\TIMEConfig;
 use SIVI\AFDConnectors\Enums\TIME\MessageStatus;
 use SIVI\AFDConnectors\Exceptions\CertificateExpiredException;
@@ -18,6 +19,7 @@ use SIVI\AFDConnectors\Models\TIME\Envelope\ListEnvelope;
 use SIVI\AFDConnectors\Models\TIME\Envelope\SingleEnvelope;
 use SIVI\AFDConnectors\Models\TIME\Message\Address;
 use SIVI\AFDConnectors\Models\TIME\Message\Part;
+use SIVI\AFDConnectors\Repositories\Contracts\WSDLCacheRepository;
 use SoapClient;
 
 class TIMEConnector implements Contracts\TIMEConnector
@@ -30,6 +32,11 @@ class TIMEConnector implements Contracts\TIMEConnector
      * @var TIMEConfig
      */
     protected $config;
+
+    /**
+     * @var WSDLCacheRepository
+     */
+    protected $wsdlCacheRepository;
 
     /**
      * TIMEConnector constructor.
@@ -158,8 +165,17 @@ class TIMEConnector implements Contracts\TIMEConnector
         $client = new Client();
 
         try {
-            $response = $client->request('GET', sprintf('%s?wsdl', $this->config->getHost()),
-                ['cert' => [$this->config->getCertificatePath(), $this->config->getCertificatePassphrase()]]);
+            if ($this->wsdlCacheRepository === null || ($this->wsdlCacheRepository !== null && !$this->wsdlCacheRepository->has('afd_connector_time_wsdl_cache'))) {
+                $response = $client->request('GET', sprintf('%s?wsdl', $this->config->getHost()),
+                    ['cert' => [$this->config->getCertificatePath(), $this->config->getCertificatePassphrase()]]);
+
+                if ($this->wsdlCacheRepository !== null) {
+                    $this->wsdlCacheRepository->add('afd_connector_time_wsdl_cache', $response,
+                        Carbon::now()->addDay());
+                }
+            } else {
+                $response = $this->wsdlCacheRepository->get('afd_connector_time_wsdl_cache');
+            }
 
             @mkdir($this->config->getWSDLStoragePath(), 0755, true);
             $path = sprintf('%s/stsPort.wsdl', $this->config->getWSDLStoragePath());
@@ -217,6 +233,14 @@ class TIMEConnector implements Contracts\TIMEConnector
         $ackResult = $client->ackMessage($parameters);
 
         return $ackResult->ackMessageResult->resultCode === "000";
+    }
+
+    /**
+     * @param WSDLCacheRepository $wsdlCacheRepository
+     */
+    public function setWSDLCacheRepository(WSDLCacheRepository $wsdlCacheRepository): void
+    {
+        $this->wsdlCacheRepository = $wsdlCacheRepository;
     }
 
     /**

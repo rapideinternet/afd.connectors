@@ -7,6 +7,7 @@ use SIVI\AFDConnectors\Exceptions\FetchingWSDLFailedException;
 use SIVI\AFDConnectors\Interfaces\BatchMessage;
 use SIVI\AFDConnectors\Interfaces\Connector;
 use SIVI\AFDConnectors\Interfaces\TIME\Message;
+use SIVI\AFDConnectors\Repositories\Contracts\WSDLCacheRepository;
 
 interface TIMEConnector extends Connector
 {
@@ -29,4 +30,8 @@ interface TIMEConnector extends Connector
      */
     public function ackMessage(Message $batchMessage);
 
+    /**
+     * @param WSDLCacheRepository $wsdlCacheRepository
+     */
+    public function setWSDLCacheRepository(WSDLCacheRepository $wsdlCacheRepository): void;
 }
