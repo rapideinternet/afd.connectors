@@ -206,7 +206,7 @@ class TIMEConnector implements Contracts\TIMEConnector
     protected function cacheWSDLResponse(string $wsdlContent): void
     {
         if ($this->wsdlCacheRepository !== null) {
-            $this->wsdlCacheRepository->add('afd_connector_time_wsdl_cache', $response, Carbon::now()->addDay());
+            $this->wsdlCacheRepository->add('afd_connector_time_wsdl_cache', $wsdlContent, Carbon::now()->addDay());
         }
     }
 
@@ -220,7 +220,7 @@ class TIMEConnector implements Contracts\TIMEConnector
         @mkdir($this->config->getWSDLStoragePath(), 0755, true);
         $path = sprintf('%s/stsPort.wsdl', $this->config->getWSDLStoragePath());
 
-        if (file_put_contents($path, $response->getBody()->getContents()) === false) {
+        if (file_put_contents($path, $wsdlContent) === false) {
             throw new WritingWSDLFailedException('Could not write temporary wsdl.');
         }
 
