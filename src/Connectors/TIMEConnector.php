@@ -24,6 +24,8 @@ use SoapClient;
 
 class TIMEConnector implements Contracts\TIMEConnector
 {
+    static $CACHE_KEY = 'afd_connector_time_wsdl_cache';
+
     /**
      * @var SoapClient
      */
@@ -165,29 +167,64 @@ class TIMEConnector implements Contracts\TIMEConnector
         $client = new Client();
 
         try {
-            if ($this->wsdlCacheRepository === null || ($this->wsdlCacheRepository !== null && !$this->wsdlCacheRepository->has('afd_connector_time_wsdl_cache'))) {
+            if ($this->hasCachedWSDLResponse()) {
+                $wsdlContent = $this->getCachedWSDLResponse();
+            } else {
                 $response = $client->request('GET', sprintf('%s?wsdl', $this->config->getHost()),
                     ['cert' => [$this->config->getCertificatePath(), $this->config->getCertificatePassphrase()]]);
+                $wsdlContent = $response->getBody()->getContents();
 
-                if ($this->wsdlCacheRepository !== null) {
-                    $this->wsdlCacheRepository->add('afd_connector_time_wsdl_cache', $response,
-                        Carbon::now()->addDay());
-                }
-            } else {
-                $response = $this->wsdlCacheRepository->get('afd_connector_time_wsdl_cache');
+                $this->cacheWSDLResponse($wsdlContent);
             }
 
-            @mkdir($this->config->getWSDLStoragePath(), 0755, true);
-            $path = sprintf('%s/stsPort.wsdl', $this->config->getWSDLStoragePath());
-
-            if (file_put_contents($path, $response->getBody()->getContents()) === false) {
-                throw new WritingWSDLFailedException('Could not write temporary wsdl.');
-            }
-
-            return $path;
+            return $this->storeWSDLContentOnFileSystem($wsdlContent);
         } catch (GuzzleException $exception) {
             throw new FetchingWSDLFailedException('Could not fetch WSDL', 0, $exception);
         }
+    }
+
+    /**
+     * @return bool
+     */
+    protected function hasCachedWSDLResponse(): bool
+    {
+        return $this->wsdlCacheRepository !== null
+            && $this->wsdlCacheRepository->has(self::$CACHE_KEY);
+    }
+
+    /**
+     * @return string|null
+     */
+    protected function getCachedWSDLResponse(): ?string
+    {
+        return $this->wsdlCacheRepository->get('afd_connector_time_wsdl_cache');
+    }
+
+    /**
+     * @param string $wsdlContent
+     */
+    protected function cacheWSDLResponse(string $wsdlContent): void
+    {
+        if ($this->wsdlCacheRepository !== null) {
+            $this->wsdlCacheRepository->add('afd_connector_time_wsdl_cache', $wsdlContent, Carbon::now()->addDay());
+        }
+    }
+
+    /**
+     * @param string $wsdlContent
+     * @return string
+     * @throws WritingWSDLFailedException
+     */
+    protected function storeWSDLContentOnFileSystem(string $wsdlContent): string
+    {
+        @mkdir($this->config->getWSDLStoragePath(), 0755, true);
+        $path = sprintf('%s/stsPort.wsdl', $this->config->getWSDLStoragePath());
+
+        if (file_put_contents($path, $wsdlContent) === false) {
+            throw new WritingWSDLFailedException('Could not write temporary wsdl.');
+        }
+
+        return $path;
     }
 
     /**
