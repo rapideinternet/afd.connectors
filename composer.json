@@ -13,7 +13,7 @@
     "myclabs/php-enum": "^1.6",
     "psr/container": "^1.0 || ^2.0",
     "guzzlehttp/guzzle": "^6.0 || ^7.2",
-    "nesbot/carbon": "^2.0",
+    "nesbot/carbon": "^2.72.6 || ^3.0",
     "ext-soap": "*"
   },
   "autoload": {
